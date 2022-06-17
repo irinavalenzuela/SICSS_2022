@@ -95,3 +95,56 @@ long_apple_data <- gather(apple_data, key=day, value=mobility_data, `2020-01-13`
 
 # Now, we can run simple calculations
 ```
+
+## 3. Visualization
+
+#### 3.1 Load data
+
+``` r
+apple_data2<-read_csv("apple_mobility_data.csv")
+```
+
+#### 3.2 Wrangling data
+
+Reshape the data to be a long data
+
+``` r
+long_data<- gather(apple_data2, key=day, value=mobility_data, `2020-01-13`:`2020-08-20`)
+```
+
+Pipe: %>% It will pass whatever is one line to the other one. It is
+convient.
+
+``` r
+country_average <- long_data %>% 
+              filter(transportation_type=="walking") %>% 
+# We want aggregate the data within a country
+  group_by(country) %>% 
+    summarise(walking_average=mean(mobility_data))
+
+# Problem: Running the previous code, we will find that there are values "NA". This is because of missing values.
+
+# We add ignore missinig values: na.rm=TRUE
+
+country_average <- long_data %>% 
+              filter(transportation_type=="walking") %>% 
+  group_by(country) %>% 
+    summarise(walking_average=mean(mobility_data, na.rm=TRUE)) %>% 
+  # !is.na(country): keep those things that are not (!) missing values in the country variables
+  filter(!is.na(country))
+```
+
+#### 3.3 Visualization
+
+``` r
+#Ggplot works with layers
+
+# Order countries according the value of walking_average: reorder(country, walking_average)
+ggplot(country_average, aes(y=reorder(country, walking_average), weight=walking_average)) +
+  geom_bar(fill="blue") + #Color the bar with "fill"
+  xlab("Relative Rate of Walking Direction Requests") +
+  ylab("Country") +
+  theme_minimal()
+```
+
+![](r_bootcamp_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
