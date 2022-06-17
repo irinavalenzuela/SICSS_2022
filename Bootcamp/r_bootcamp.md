@@ -112,8 +112,7 @@ Reshape the data to be a long data
 long_data<- gather(apple_data2, key=day, value=mobility_data, `2020-01-13`:`2020-08-20`)
 ```
 
-Pipe: %>% It will pass whatever is one line to the other one. It is
-convient.
+Pipe: %>% It will pass whatever is one line to the other one.
 
 ``` r
 country_average <- long_data %>% 
@@ -148,3 +147,58 @@ ggplot(country_average, aes(y=reorder(country, walking_average), weight=walking_
 ```
 
 ![](r_bootcamp_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+lubridate: packaeg to transfor a character variable to date
+
+``` r
+# Load lubridate library
+library(lubridate)
+
+# Transform a date style object
+long_data$day <- as_date(long_data$day)
+
+# Create a aggregate data by day for Italy
+italy_data<- long_data %>% 
+  filter(country=="Italy", transportation_type=="walking") %>% 
+  group_by(country, day) %>% 
+  summarise(walking_average=mean(mobility_data, na.rm=TRUE))
+
+#Plot
+
+ggplot(italy_data,aes(x=day, y=walking_average)) +
+  geom_line()+
+  theme_minimal()+
+  ylab("Relative Volume of Walking Direction Requests")
+```
+
+![](r_bootcamp_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+International Comparison. Using a vector a countries: c(“Italy,”Spain”)
+
+``` r
+italy_spain_data<- long_data %>% 
+  filter(country==c("Italy","Spain"), transportation_type=="walking") %>% 
+  group_by(country, day) %>% 
+  summarise(walking_average=mean(mobility_data, na.rm=TRUE))
+
+#Plot
+
+ggplot(italy_spain_data,aes(x=day, y=walking_average, group=country, colour=country)) +
+  geom_line()+
+  theme_minimal()+
+  ylab("Relative Volume of Walking Direction Requests")
+```
+
+![](r_bootcamp_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+``` r
+# Facet: multiple plots
+
+ggplot(italy_spain_data,aes(x=day, y=walking_average, group=country, colour=country)) +
+  geom_line()+
+  facet_wrap(~country)+ #facet: organize by country
+  theme_minimal()+
+  ylab("Relative Volume of Walking Direction Requests")
+```
+
+![](r_bootcamp_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
